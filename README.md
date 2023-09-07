@@ -1,8 +1,5 @@
 # TEB3133-Data-Visualisation
 
-## Content 
-| No. | Contents |
-| 1 | What's D3.js? |
 
 ### Day 1 - Lab : Thurs, 7th Sept 2023 
 
