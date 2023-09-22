@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 1 : Exercise 1 (18 Sept 2023)</title>
+    <!-- Load d3.js -->
+    <!-- <script src="https://d3js.org/d3.v7.min.js"></script> -->
+    <script src="d3.v7.min.js"></script> <!-- THIS IS FOR OFFLINE USAGE, ONLY WORKS WHEN THE LIBRARY HAS BEEN ADDED IN YOUR FOLDER -->
+</head>
+<body>
+    <div id="my_dataviz"></div>
+    
+    <script>
+        var margin = {top: 30, right: 30, bottom: 70, left: 60};
+        var width = 500 - margin.left - margin.right;
+        var height = 450 - margin.top - margin.bottom;
+
+        // Select the container and append an SVG element
+        var svg = d3.select("#my_dataviz")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        
+            svg.append("text")
+                .attr("x", (width)/ 2)           
+                .attr("y", 0 - (margin.top / 2) + margin.top)
+                .attr("text-anchor", "middle")  
+                .style("font-size", "16px") 
+                .style("text-decoration", "underline")  
+                .text("Electronics Sold in Miera's Store");
+        // Load data from a CSV file named "electronics.csv"
+        d3.csv('electronics.csv')
+            .then(function(data)    {
+                // Data Processing and Visualization
+
+                // Create a scale for the x-axis (product names)
+                var x = d3.scaleBand()
+                .range([ 0, width - margin.left ])
+                    .domain(data.map(function(d) { return d.Product; }))
+                    .padding(0.35);
+                
+                // Append an x-axis to the chart
+                svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(x))
+                    .selectAll("text")
+                        .attr("transform", "translate(0,0)rotate(0)") 
+                        .style("textanchor", "end");
+                
+                // To add x-axis label
+                svg.append("text")
+                    .attr("class", "x label")
+                    .attr("text-anchor", "end")
+                    .style("font-size", "12px")
+                    .style("font-weight", 800)   
+                    .attr("x", width - 5)
+                    .attr("y", height - (-4))
+                    .text("Products");
+                
+                // Create a scale for the y-axis 
+                var y = d3.scaleLinear()
+                    .domain([0, 30]) 
+                    .range([height, 0 + margin.top*2]);
+                
+                // Append a y-axis to the chart
+                svg.append("g")
+                    .call(d3.axisLeft(y)); 
+                    
+                // To add y-axis label
+                svg.append("text")
+                .attr("class", "x label")
+                .attr("text-anchor", "end")
+                .style("font-size", "12px")
+                .style("font-weight", 800) 
+                .attr("y", (-8))
+                .attr("dy", ".80em")
+                .attr("x", -25)
+                .attr("transform", "rotate(-90)")
+                .text("Unit");
+
+                // Add bars and close the scripts
+                svg.selectAll("mybar")
+                    .data(data)
+                    .enter()
+                    .append("rect")
+                        .attr("x", function(d) { return x(d.Product); })
+                        .attr("y", function(d) { return y(d.Unit); })
+                        .attr("width", x.bandwidth())
+                        .attr("height", function(d) { return height - y(d.Unit); })
+                        .attr("fill", "#AA336A")
+
+                // Additional chart customization can be done here
+            })
+            .catch(function(error) {
+                //Handle errors if CSV file cannot be loaded
+                console.error("Error loading CSV:", error);
+            });
+    </script> 
+</body>
+</html>
