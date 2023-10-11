@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question 1</title>
+    <!-- Step 1: Load d3.js -->
+    <script src="d3.v7.min.js"></script>
+</head>
+<body>
+    <!-- Step 2: Create a div to put the graphs in -->
+    <div id="boxplot-container"></div>
+
+    <!-- Step 3: Set the dimensions and margins of the graphs -->
+    <script>
+        // Step 3: Define margins and dimensions
+        const margin = { top: 20, right: 30, bottom: 60, left: 60 };
+        const width = 400;
+        const height = 400;
+
+        // Step 4: Create an SVG element for the graphs
+        const svg = d3.select("#boxplot-container")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Step 5: Load the data from "Mall_Customers.csv"
+        d3.csv("Mall_Customers.csv")
+            .then(function (data) {
+                // Step 6: Create scales for x and y axes
+                var x = d3.scaleBand()
+                    .domain(data.map(d => d.Gender))
+                    .range([0, width])
+                    .paddingInner(0.2)
+                    .paddingOuter(0.1);
+
+                svg.append("g")
+                    .attr("transform", `translate(0, ${height})`)
+                    .call(d3.axisBottom(x).tickSize(0));
+
+                var y = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => +d.Age)])
+                    .nice()
+                    .range([height, 0]);
+
+                svg.append("g")
+                    .call(d3.axisLeft(y));
+
+                // Step 7: Create box plots by Gender
+                var boxWidth = 50;
+
+                // Function to create a box plot
+                function createBoxPlot(dataset, color) {
+                    var summaryData = {
+                        q1: d3.quantile(dataset, 0.25, d => +d.Age),
+                        median: d3.quantile(dataset, 0.5, d => +d.Age),
+                        q3: d3.quantile(dataset, 0.75, d => +d.Age),
+                        min: d3.min(dataset, d => +d.Age),
+                        max: d3.max(dataset, d => +d.Age),
+                    };
+
+                    // Calculate the x-coordinate based on the Gender category and box width
+                    var xCoord = x(dataset[0].Gender) + (x.bandwidth() - boxWidth) / 2;
+
+                    svg.append("rect")
+                        .attr("x", xCoord)
+                        .attr("y", y(summaryData.q3))
+                        .attr("width", boxWidth)
+                        .attr("height", y(summaryData.q1) - y(summaryData.q3))
+                        .style("fill", color)
+                        .style("stroke", "black");
+
+                    svg.append("line")
+                        .attr("x1", xCoord + boxWidth / 2)
+                        .attr("x2", xCoord + boxWidth / 2)
+                        .attr("y1", y(summaryData.min))
+                        .attr("y2", y(summaryData.max))
+                        .style("stroke", "black");
+
+                    svg.append("line")
+                        .attr("x1", xCoord)
+                        .attr("x2", xCoord + boxWidth)
+                        .attr("y1", y(summaryData.median))
+                        .attr("y2", y(summaryData.median))
+                        .style("stroke", "black")
+                        .style("stroke-width", 2);
+                }
+
+                // Create box plots for Male and Female data
+                createBoxPlot(data.filter(d => d.Gender === "Male"), "blue");
+                createBoxPlot(data.filter(d => d.Gender === "Female"), "pink");
+
+                 // Step 8: Add X and Y labels
+                 svg.append("text")
+                    .attr("class", "x label")
+                    .attr("text-anchor", "middle")
+                    .attr("x", width / 2)
+                    .attr("y", height + margin.top + 20)
+                    .text("Gender");
+
+                svg.append("text")
+                    .attr("class", "y label")
+                    .attr("text-anchor", "middle")
+                    .attr("x", -height / 2)
+                    .attr("y", -margin.left + 10)
+                    .attr("dy", ".75em")
+                    .attr("transform", "rotate(-90)")
+                    .text("Age");
+
+            })
+            .catch(function (error) {
+                // Handle errors if the CSV file cannot be loaded
+                console.error("Error loading CSV:", error);
+            });
+    </script>
+</body>
+</html>

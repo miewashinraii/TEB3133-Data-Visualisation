@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualization</title>
+    <!-- Step 1: Load d3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <!-- Step 2: Create a div to put the graph in -->
+    <div id="my_dataviz"></div>
+
+    <!-- Step 3: Set the dimensions and margins of the graph -->
+    <script>
+        // Step 3: Define margins and dimensions
+        const margin = { top: 10, right: 30, bottom: 30, left: 60 },
+            width = 460 - margin.left - margin.right,
+            height = 450 - margin.top - margin.bottom;
+
+        // Step 3: Create an SVG element for the graph
+        const svg = d3.select("#my_dataviz")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Step 4: Parse the data from GitHub and format the date variable
+        d3.csv("iris.csv")
+            .then(function (data) {
+                // Group data by Species
+                var nestedData = d3.group(data, d => d.Species);
+
+                // Calculate statistics for each group
+                var summaryData = Array.from(nestedData, ([key, values]) => {
+                    // Extract Sepal_Length values and sort them
+                    values = values.map(d => +d.Sepal_Length).sort(d3.ascending);
+                    const q1 = d3.quantile(values, 0.25);
+                    const median = d3.quantile(values, 0.5);
+                    const q3 = d3.quantile(values, 0.75);
+                    const interQuantileRange = q3 - q1;
+                    const min = q1 - 1.5 * interQuantileRange;
+                    const max = q3 + 1.5 * interQuantileRange;
+                    return { key, q1, median, q3, interQuantileRange, min, max };
+                });
+
+                // Step 5: Create scales for x and y axes
+                var x = d3.scaleLinear()
+                    .domain([0, 3000])
+                    .range([0, width]);
+                svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(x));
+
+                var y = d3.scaleLinear()
+                    .domain([0, 400000])
+                    .range([height, 0]);
+                svg.append("g")
+                    .call(d3.axisLeft(y));
+
+                // Add a tooltip
+
+                var tooltip = d3.select("#my_dataviz")
+                    .append("div")
+                    .style("opacity", 0)
+                    .attr("class", "tooltip")
+                    .style("background-color", "white")
+                    .style("border", "solid")
+                    .style("border-width", "2px")
+                    .style("border-radius", "5px")
+                    .style("padding", "10px")
+                    .style("position", "absolute")
+
+                // Add a function to change opacity to 1 when user hovers a point
+
+                var mouseover = function(d) {
+                    tooltip
+                        .style("opacity", 1)
+                }
+                var mousemove = function(d) {
+                    tooltip
+                        .html("The exact value of<br>the Ground Living area is: " + d.GrLivArea)
+                        .style("left", (d3.mouse(this)[0]+90) + "px")
+                        .style("top", (d3.mouse(this)[1]) + "px")
+                }
+
+                // Add a function to change opacity of tooltip back to 0 when user leaves a point
+
+                var mouseleave = function(d) {
+                    tooltip
+                        .transition()
+                        .duration(200)
+                        .style("opacity", 0)
+                }
+
+                // Modify adding dots code
+
+                .selectAll("dot")
+                    .data(data.filter(function(d,i){return i<50})) // the .filter part is just to keep a few dots on the chart, not all of them
+                    .enter()
+                    .append("circle")
+                        .attr("cx", function (d) { return x(d.GrLivArea); } )
+                        .attr("cy", function (d) { return y(d.SalePrice); } )
+                        .attr("r", 7) // radius size, could map to another data dimension
+                        .style("fill", "#69b3a2")
+                        .style("opacity", 0.3)
+                        .style("stroke", "white")
+                    .on("mouseover", mouseover )
+                    .on("mousemove", mousemove )
+                    .on("mouseleave", mouseleave )
+
+
+                // // Step 6: Draw vertical lines
+                // svg
+                //     .selectAll("vertLines")
+                //     .data(summaryData)
+                //     .enter()
+                //     .append("line")
+                //     .attr("x1", d => x(d.key))
+                //     .attr("x2", d => x(d.key))
+                //     .attr("y1", d => y(d.min))
+                //     .attr("y2", d => y(d.max))
+                //     .attr("stroke", "black")
+                //     .style("width", 40);
+
+                // // Step 7: Draw rectangles for the main boxes
+                // var boxWidth = 100;
+                // svg
+                //     .selectAll("boxes")
+                //     .data(summaryData)
+                //     .enter()
+                //     .append("rect")
+                //     .attr("x", d => x(d.key) - boxWidth / 2)
+                //     .attr("y", d => y(d.q3))
+                //     .attr("height", d => y(d.q1) - y(d.q3))
+                //     .attr("width", boxWidth)
+                //     .attr("stroke", "black")
+                //     .style("fill", "#FFA500");
+
+                // // Step 8: Draw lines for medians
+                // svg
+                //     .selectAll("medianLines")
+                //     .data(summaryData)
+                //     .enter()
+                //     .append("line")
+                //     .attr("x1", d => x(d.key) - boxWidth / 2)
+                //     .attr("x2", d => x(d.key) + boxWidth / 2)
+                //     .attr("y1", d => y(d.median))
+                //     .attr("y2", d => y(d.median))
+                //     .attr("stroke", "black")
+                //     .style("width", 80);
+
+            })
+            .catch(function (error) {
+                // Handle errors if the CSV file cannot be loaded
+                console.error("Error loading CSV:", error);
+            });
+    </script>
+</body>
+</html>
