@@ -10,7 +10,22 @@
 <body>
     <div id="myPie"></div>
 
+    <style>
+        #tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            pointer-events: none;
+            display: none;
+        }
+    </style>
+
+    <div id="tooltip"></div>
+
     <script>
+        // Extract from dataset
         d3.csv("cpi_core.csv", function(data) {
             var dataMap = {};
             var categories = ["food_beverage", "clothing_footwear", "housing_utilities", "furnishings", "health"];
@@ -24,7 +39,7 @@
             var pie = new d3pie("myPie", {
                 header: {
                     title: {
-                        text: "Malaysian Statewise Clothing & Footwear Price Change"
+                        text: "Sum of Malaysia's Consumer Price Index (CPI) from 2015-01-01 to 2023-08-01"
                     }
                 },
                 data: {
@@ -33,17 +48,26 @@
                         { label: "Clothing & Footwear", value: dataMap["clothing_footwear"] },
                         { label: "Housing & Utilities", value: dataMap["housing_utilities"] },
                         { label: "Furnishings", value: dataMap["furnishings"] },
-                        { label: "Health", value: dataMap["health"] }
+                        { label: "Health", value: dataMap["health"] },
                     ]
                 },
                 callbacks: {
-                    onMouseoverSegment: function(info) {
-                        console.log("Mouse in", info);
-                    },
-                    onMouseoutSegment: function(info) {
-                        console.log("Mouse out:", info);
-                    }
-                }
+                onMouseoverSegment: function(data) {
+                    // Show the tooltip with segment information
+                    var tooltip = document.getElementById("tooltip");
+                    var category = data.data.label; // This is the category label
+                    var value = data.data.value; // This is the corresponding value from the dataset
+                    
+                    tooltip.style.display = "block";
+                    tooltip.innerHTML = category + ": " + value; // Display the category and its value
+
+                    // Position the tooltip near the mouse pointer
+                    tooltip.style.left = (d3.event.pageX + 10) + "px";
+                    tooltip.style.top = (d3.event.pageY - 30) + "px";
+                },
+                // ...
+            }
+
             });
         });
     </script>
