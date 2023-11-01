@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 4 Week 6 (a)</title>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <!-- Color scale -->
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+</head>
+<body>
+    <div id="my_dataviz"></div>
+
+    <script>
+        var width = 450,
+            height = 450,
+            margin = 40;
+
+        var radius = Math.min(width, height) / 2 - margin;
+
+        var svg = d3.select("#my_dataviz")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+        // Load data from CSV file
+        d3.csv("cpi_core.csv", function(data) {
+            // Initialize an object to store data
+            var dataMap = {};
+
+            // Process the CSV data
+            data.forEach(function(d) {
+                dataMap["food_beverage"] = (dataMap["food_beverage"] || 0) + +d.food_beverage;
+                dataMap["clothing_footwear"] = (dataMap["clothing_footwear"] || 0) + +d.clothing_footwear;
+                dataMap["housing_utilities"] = (dataMap["housing_utilities"] || 0) + +d.housing_utilities;
+                dataMap["furnishings"] = (dataMap["furnishings"] || 0) + +d.furnishings;
+                dataMap["health"] = (dataMap["health"] || 0) + +d.health;
+            });
+
+            // Create a color scale
+            var color = d3.scaleOrdinal()
+                .domain(Object.keys(dataMap))
+                .range(d3.schemeSet2);
+
+            // Create a pie layout
+            var pie = d3.pie()
+                .value(function (d) { return d.value; });
+
+            // Prepare the data for the pie chart
+            var data_ready = pie(d3.entries(dataMap));
+
+            // Create arc generator
+            var arcGenerator = d3.arc()
+                .outerRadius(radius * 0.8)
+                .innerRadius(radius * 0.4);
+
+            // Create and style pie slices
+            svg.selectAll('path')
+                .data(data_ready)
+                .enter()
+                .append('path')
+                .attr('d', arcGenerator)
+                .attr('fill', function (d) { return color(d.data.key); })
+                .attr("stroke", "black")
+                .style("stroke-width", "2px")
+                .style("opacity", 0.7);
+
+            // Add labels to the pie slices
+            svg.selectAll('text')
+                .data(data_ready)
+                .enter()
+                .append('text')
+                .text(function (d) { return d.data.key; })
+                .attr("transform", function (d) { return "translate(" + arcGenerator.centroid(d) + ")"; })
+                .style("text-anchor", "middle")
+                .style("font-size", 17);
+        });
+    </script>
+</body>
+</html>

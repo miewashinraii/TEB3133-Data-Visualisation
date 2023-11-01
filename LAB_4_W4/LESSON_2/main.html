@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://d3js.org/d3.v4.js"></script>'
+    <script src="d3pie.min.js"></script>
+</head>
+<body>
+    <div id = "myPie"></div>
+
+    <script>
+
+        var pie = new d3pie("myPie", {
+        header: {
+        title: {
+        text: "Number Of Deaths By Type Of Diseases, Malaysia (2000-2016)"
+        }
+        },
+        data: {
+        content: [
+        { label: "Dengue and dengue haemorrhagic fever", value: 1923 },
+        { label: "Malaria", value: 416 },
+        { label: "Typhoid", value: 43},
+        { label: "Cholera", value: 51},
+        ]
+        },
+
+        callbacks: {
+        onMouseoverSegment: function(info) {
+        console.log("mouse in", info);
+        },
+        onMouseoutSegment: function(info) {
+        console.log("mouseout:", info);
+        }
+        }
+        });
+    </script>
+    
+</body>
+</html>

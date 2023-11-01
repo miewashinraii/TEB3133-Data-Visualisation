@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 4 Week 6 (b)</title>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="d3pie.min.js"></script>
+</head>
+<body>
+    <div id="myPie"></div>
+
+    <script>
+        d3.csv("cpi_core.csv", function(data) {
+            var dataMap = {};
+            var categories = ["food_beverage", "clothing_footwear", "housing_utilities", "furnishings", "health"];
+
+            data.forEach(function(d) {
+                categories.forEach(function(category) {
+                    dataMap[category] = (dataMap[category] || 0) + +d[category];
+                });
+            });
+
+            var pie = new d3pie("myPie", {
+                header: {
+                    title: {
+                        text: "Malaysian Statewise Clothing & Footwear Price Change"
+                    }
+                },
+                data: {
+                    content: [
+                        { label: "Food & Beverage", value: dataMap["food_beverage"] },
+                        { label: "Clothing & Footwear", value: dataMap["clothing_footwear"] },
+                        { label: "Housing & Utilities", value: dataMap["housing_utilities"] },
+                        { label: "Furnishings", value: dataMap["furnishings"] },
+                        { label: "Health", value: dataMap["health"] }
+                    ]
+                },
+                callbacks: {
+                    onMouseoverSegment: function(info) {
+                        console.log("Mouse in", info);
+                    },
+                    onMouseoutSegment: function(info) {
+                        console.log("Mouse out:", info);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
