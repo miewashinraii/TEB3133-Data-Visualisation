@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 5 - 20000440</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+</head>
+<body>
+    <h1 class="map-title">Global Meningitis Cases, 2019</h1>
+    <h4>The choropleth below shows the number of people died from Meningitis. Hover the map to see. <br>
+    <br><i><b>(Kaggle, 2022)</i></b></h4>
+<!-- Tooltip element -->
+<div class="tooltip"></div>
+<svg width="960" height="620"></svg>
+<script>
+
+    // The svg
+    const svg = d3.select("svg"),
+        width = +svg.attr("width"),
+        height = +svg.attr("height");
+
+    // Map and projection
+    const path = d3.geoPath();
+    const projection = d3.geoMercator()
+        .scale(95)
+        .center([100, -20])
+        .translate([width / 2, height / 2]);
+
+    // Data and color scale
+    const data = new Map();
+    const colorScale = d3.scaleThreshold()
+        .domain([100, 2500, 3000, 3500, 4000, 4500, 5000])
+        .range(d3.schemeBlues[7]);
+    
+    // Tooltip functions
+    // Tooltip functions
+    function mouseOver(event, d) {
+        d3.select(this)
+            .transition()
+            .duration(200)
+            .style("opacity", 1)
+            .style("stroke", "black");
+
+        // Show tooltip
+        d3.select(".tooltip")
+            .html(`<strong>${d.properties.name}</strong><br>Total: ${d.total.toFixed(2)}`)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 15) + "px")
+            .style("opacity", 1);
+    }
+
+    function mouseLeave(d) {
+        d3.select(this)
+            .transition()
+            .duration(200)
+            .style("opacity", .8)
+            .style("stroke", "transparent");
+
+        // Hide tooltip
+        d3.select(".tooltip")
+            .style("opacity", 0);
+    }
+
+
+    // Load external data and boot
+    Promise.all([
+        d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"),
+        d3.csv("cause_of_deaths.csv", function (d) {
+            data.set(d.Code, +d.Meningitis)
+        })]).then(function (loadData) {
+        let topo = loadData[0];
+
+        // Draw the map
+        svg.append("g")
+            .selectAll("path")
+            .data(topo.features)
+            .enter()
+            .append("path")
+            // draw each country
+            .attr("d", d3.geoPath()
+                .projection(projection)
+            )
+            // set the color of each country
+            .attr("fill", function (d) {
+                d.total = data.get(d.id) || 0;
+                return colorScale(d.total);
+            })
+            .style("stroke", "transparent")
+            .attr("class", function (d) {
+                return "Country"
+            })
+            .style("opacity", .8)
+            .on("mouseover", mouseOver)
+            .on("mouseleave", mouseLeave)
+    //diverging colours
+    const x = d3.scaleLinear()
+            .domain([2.6, 75.1])
+            .rangeRound([600, 860]);
+
+    // SVG for legend
+    const legend = svg.append("g")
+        .attr("id", "legend")
+        .attr("transform", "translate(800, 100)"); // Adjust the translation to position the legend
+
+    // ...
+
+    // Legend entry
+    const legend_entry = legend.selectAll("g.legend")
+        .data(colorScale.range().map(function (d) {
+            d = colorScale.invertExtent(d);
+            if (d[0] == null) d[0] = x.domain()[0];
+            if (d[1] == null) d[1] = x.domain()[1];
+            return d;
+        }))
+        .enter().append("g")
+        .attr("class", "legend_entry");
+
+    // Set width and height of legend rectangle
+    const ls_w = 20,
+        ls_h = 20;
+
+    legend_entry.append("text")
+        .attr("x", 10) // Adjust x-coordinate
+        .attr("y", function (d, i) {
+            return (i * ls_h)-5+250;
+        })
+        .attr("font-size", 14)
+        .text(function (d, i) {
+            if (i === 0) return "< " + d[1];
+            if (d[1] < d[0]) return d[0];
+            return d[0] + " - " + d[1];
+        });
+
+    legend_entry.append("rect")
+        .attr("x", -10) // Adjust x-coordinate
+        .attr("y", function (d, i) {
+            return (i * ls_h - ls_h)+250; // Adjust y-coordinate
+        })
+        .attr("width", ls_w)
+        .attr("height", ls_h)
+        .style("fill", function (d) {
+            return colorScale(d[0]);
+        })
+        .style("opacity", 0.8);
+
+    legend.append("text").attr("x", 10).attr("y", -30+250).text("Number of Deaths"); // Adjust x and y coordinates
+
+            })
+
+    
+    </script>
+</body>
+</html>

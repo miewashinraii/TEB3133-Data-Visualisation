@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAB 5 (Monday, 16th Oct 2023) - LESSON 2</title>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+</head>
+<body>
+    <svg id="my_dataviz" width="1000" height="800"></svg>
+    <script>
+        // Setting the dimensions & margins of the graph
+        var svg = d3.select("svg");
+        var width = +svg.attr("width");
+        var height = +svg.attr("height");
+
+        // Setting the path & projection
+        var path = d3.geoPath();
+        var projection = d3.geoMercator()
+            .scale(200)
+            .center([0, 0])
+            .translate([width / 2, height / 2]);
+
+        // Setting data and color Scale
+        var data = new Map();
+        var colorScale = d3.scaleThreshold()
+            .domain([100000, 1000000, 10000000, 30000000, 100000000, 500000000])
+            .range(d3.schemeBlues[7]);
+
+        // Load two external data files using d3.queue()
+        d3.queue()
+            .defer(d3.json, "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson")
+            .defer(d3.csv, "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world_population.csv", function(d) { data.set(d.code, +d.pop); })
+            .await(ready);
+
+        // Boating the data & drawing the map
+        function ready(error, topo, population) {
+            if (error) throw error;
+
+            // Draw the map
+            svg.append("g")
+                .selectAll("path")
+                .data(topo.features)
+                .enter()
+                .append("path")
+                .attr("d", d3.geoPath()
+                    .projection(projection)
+                )
+                .attr("fill", function (d) {
+                    d.total = data.get(d.id) || 0;
+                    return colorScale(d.total);
+                });
+
+        // Create a diverging color scale
+        const x = d3.scaleLinear()
+                    .domain([2.6, 75.1])
+                    .rangeRound([600, 860]);
+
+        // Create SVG for legend
+        const legend = svg.append("g")
+                            .attr("id", "legend");
+
+        // Create Legend entry
+        const legend_entry = legend.selectAll("g.legend_entry")
+                        .data(colorScale.range().map(function(color) {
+                            const d = colorScale.invertExtent(color);
+                            if (d[0] == null) d[0] = x.domain()[0];
+                            if (d[1] == null) d[1] = x.domain()[1];
+                            return d;
+                        }))
+                        .enter().append("g")
+                        .attr("class", "legend_entry");
+        // Setting width & height of legend rectangle
+        const ls_w = 20,
+              ls_h = 20;
+
+        // Append rectangle to the legend entry
+        legend_entry.append("rect")
+                    .attr("x", 500)
+                    .attr("y", function(d, i) {
+                        return height - (i * ls_h) - 2 * ls_h;
+                    })
+                    .attr("width", ls_w)
+                    .attr("height", ls_h)
+                    .style("fill", function(d) {
+                        return colorScale(d[0]);
+                    })
+                    .style("opacity", 0.8);
+
+        // Append rectangle text to legend
+        legend_entry.append("text")
+                    .attr("x", 530)
+                    .attr("y", function(d, i) {
+                        return height - (i * ls_h) - ls_h - 6;
+                    })
+                    .text(function(d, i) {
+                        if (i === 0) {
+                            return "< " + (d[1] / 1000000) + " m";
+                        } else if (d[1] === x.domain()[1]) {
+                            return "> " + (d[0] / 1000000) + " m";
+                        } else {
+                            return (d[0] / 1000000) + " m - " + (d[1] / 1000000) + " m";
+                        }
+                    });
+
+        // Append the Legend Title
+        legend.append("text").attr("x", 500).attr("y", 630).text("Population (Million)");
+        }   
+    </script>
+</body>
+</html>
