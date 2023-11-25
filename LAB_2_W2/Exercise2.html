@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+    <style>
+
+        body {
+            font-family: 'Montserrat';
+        }
+        .title {
+            width: 100%;
+            height: 50px;
+            margin: 0 auto;
+            background-color: #F7F7FF;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            margin: auto;
+            
+
+        }
+
+        .subject {
+            float: left;
+            text-align: left;
+            font-weight: bold;
+            color: #212738;
+            padding: 0px 20px;
+        }
+
+        .lab {
+            text-align: center;
+            display: inline-block;
+        }
+
+        .myname {
+            float: right; 
+            text-align: right;
+            padding: 0px 20px;
+        }
+
+        .myimage {
+            width: 40px;
+            height: 40px;
+            overflow: hidden;   
+            float: right;
+            align-items: center;
+            padding: 5px 0px;
+
+        }
+
+        .myimage img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+
+        }
+
+        .line {
+            fill: none;
+            stroke: steelblue;
+            stroke-width: 2px;
+        }
+
+        .container{
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+            width: 75%;
+            position: absolute; /* Positioning context */
+            top: 50%; /* Move the top edge to the vertical center */
+            left: 50%; /* Move the left edge to the horizontal center */
+            transform: translate(-50%, -50%); /* Center the div precisely */
+        }
+
+        .smallline-container {
+            margin-top:590px;
+            width: 100%; /* Set the container to full width of the viewport */
+            height: 250px; /* Set the container to full height of the viewport */
+            display: flex; /* Use flexbox to arrange sections horizontally */
+            flex-direction: row; 
+
+        }
+
+        .section {
+            margin: 10px; 
+            flex: 1; /* Each section takes an equal amount of available space */
+            border: 0.5px solid #ccc; /* Add borders for visual separation */
+            padding: 20px; /* Add padding for spacing within sections */
+            box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Smaller legend container */
+        .legend {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            margin-top: 150px;
+            position: absolute;
+            top: 0;
+            right:230px;
+            padding: 5px; /* Smaller padding */
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid #ccc;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Smaller legend items */
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2px; /* Smaller margin between legend items */
+        }
+
+        /* Smaller legend color boxes */
+        .legend-color {
+            width: 15px; /* Smaller width */
+            height: 15px; /* Smaller height */
+            margin-right: 5px;
+        }
+
+        /* Smaller legend text */
+        .legend-item span {
+            font-size: 12px; /* Smaller font size */
+        }
+
+    </style>
+    <script src="https://d3js.org/d3.v7.js"></script>
+    <title>Technology Company Stock Market Dashboard</title>
+</head>
+<body>
+
+    <div class="title">
+        <p class="subject">TEB3133: Data Visualization</p>
+        <p class="lab">Lab 2 Exercise 2</p>
+        <p class="myname">Nor Amirah Hani (20000440)</p>
+    </div>
+
+    <div id="multiline_chart" class="container"></div>
+    <div class="legend"></div>
+
+    <div id="small_linechart" class="smallline-container">
+        <div id="line_apple" class="section"></div>
+        <div id="line_google" class="section"></div>
+        <div id="line_amazon" class="section"></div>
+        <div id="line_microsoft" class="section"></div>
+        <div id="line_ibm" class="section"></div>
+        <div id="line_facebook" class="section"></div>
+    </div>
+
+    <script>
+
+        //adding margin
+        const margin = {top: 40, right: 100, bottom: 50, left:120},
+            width = 1100 - margin.left - margin.right,
+            height = 540 - margin.top - margin.bottom;
+
+        //define the legend mapping (company names to line colors)
+        const legendMapping = {
+            "Apple": "steelblue",
+            "Google": "#699950",
+            "Amazon": "#5B2E48",
+            "Microsoft": "#EE2E31",
+            "IBM": "#FFD400",
+            "Facebook": "#DF57BC",
+        };
+
+        // set the ranges
+        var x = d3.scaleTime().range([0, width]);
+        var y = d3.scaleLinear().range([height, 0]);
+
+        // define the lines
+        var apple = d3.line()
+            .x(function(d) { return x(d.date); })
+            .y(function(d) { return y(d.Apple); });
+        
+        var google = d3.line()
+            .x(function(d) { return x(d.date); })
+            .y(function(d) { return y(d.Google); });
+        
+        var amazon = d3.line()
+            .x(function(d) { return x(d.date); })
+            .y(function(d) { return y(d.Amazon); });
+    
+        var microsoft = d3.line()
+            .x(function(d) { return x(d.date); })
+            .y(function(d) { return y(d.Microsoft); });
+        
+        var ibm = d3.line()
+            .x(function(d) { return x(d.date); })
+            .y(function(d) { return y(d.IBM); });
+        
+        var facebook = d3.line()
+            .x(function(d) { return x(d.date); })
+            .y(function(d) { return y(d.Facebook); });
+        
+
+
+        //insert svg - multiline
+
+        const canvas_multiline = d3.select("#multiline_chart")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.bottom + ")");
+        
+        
+        //Parse the data
+        d3.csv("stockdata-2.csv")
+            .then(function(data){
+                //parse date/time
+                var parseDate = d3.timeParse("%Y-%m-%d");
+
+                //format the date
+                data.forEach(d => {
+                    d.date = parseDate(d.date);
+                    d.Apple = +d.Apple;
+                    d.Google = +d.Google;
+                    d.Amazon = +d.Amazon;
+                    d.Microsoft = +d.Microsoft;
+                    d.IBM = +d.IBM;
+                    d.Facebook = +d.Facebook;
+                });
+
+                // Scale the range of the data for x and y
+                x.domain(d3.extent(data, function(d) { return d.date; }));
+                y.domain([0, d3.max(data, function(d) {
+                    return Math.max(d.Apple,d.Google,d.Amazon,d.Microsoft,d.IBM,d.Facebook); })]);
+                
+                // Add the apple path
+                canvas_multiline.append("path")
+                    .data([data])
+                    .attr("class", "line")
+                    .attr("d", apple);
+                // Add the google path
+                canvas_multiline.append("path")
+                    .data([data])
+                    .attr("class", "line")
+                    .style("stroke", "#699950")
+                    .attr("d", google);
+                // Add the amazon path
+                canvas_multiline.append("path")
+                    .data([data])
+                    .attr("class", "line")
+                    .style("stroke", "#5B2E48")
+                    .attr("d", amazon);
+                // Add the microsoft path
+                canvas_multiline.append("path")
+                    .data([data])
+                    .attr("class", "line")
+                    .style("stroke", "#EE2E31")
+                    .attr("d", microsoft);
+                // Add the ibm path
+                canvas_multiline.append("path")
+                    .data([data])
+                    .attr("class", "line")
+                    .style("stroke", "#FFD400")
+                    .attr("d", ibm);
+                // Add the facebook path
+                canvas_multiline.append("path")
+                    .data([data])
+                    .attr("class", "line")
+                    .style("stroke", "#DF57BC")
+                    .attr("d", facebook);
+                // Add the X Axis
+                canvas_multiline.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(x));
+                // Add the Y Axis
+                canvas_multiline.append("g")
+                    .call(d3.axisLeft(y));
+                // Main graph title
+                canvas_multiline.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", -margin.top / 2)
+                    .style("text-anchor", "middle")
+                    .style("font-size", "20px")
+                    .style("font-family", "Montserrat")
+                    .style("font-weight","bold")
+                    .text("Technology Stock Price from Year 2000-2015");
+
+                //X axis title
+                canvas_multiline.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", height + margin.bottom - 15)
+                    .style("text-anchor", "middle")
+                    .style("font-size", 14)
+                    .style("font-family", "Montserrat")
+                    .text("Year");
+                // Y-axis title
+                canvas_multiline.append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("x", -height / 2)
+                    .attr("y", -margin.left+70)
+                    .style("text-anchor", "middle")
+                    .style("font-size", 14)
+                    .style("font-family", "Montserrat")
+                    .text("Price ($)");
+                 // Create the legend items dynamically
+                const legend = d3.select(".legend");
+                Object.entries(legendMapping).forEach(([companyName, color]) => {
+                    const legendItem = legend
+                        .append("div")
+                        .attr("class", "legend-item");
+
+                    legendItem
+                        .append("div")
+                        .attr("class", "legend-color")
+                        .style("background-color", color);
+
+                    legendItem
+                        .append("span")
+                        .text(companyName);
+                 });
+
+            
+               
+         })
+        
+
+    </script>
+
+    <script src="smalline.js"></script>
+    <div style="margin: 10px 50px 80px 20px; width: 80%;">
+        <h3><b>Insights:</b></h3>
+        <ul>
+            <li>The value of Apple and Google stocks has experienced a more accelerated growth in recent years compared to the initial years of the decade. </li>
+            <li>The growth rate of Microsoft stock has been less rapid than that of the other three companies in the last decade.</li>
+            <li>The chart also indicates a decline in the value of IBM stock over the last decade, implying that IBM's growth is not as robust as that of the other companies, and the market exhibits less confidence in IBM's future outlook.</li>
+            <li>In contrast to Apple, Google, and Amazon, the stock prices of Microsoft, IBM, and Facebook remain within the range of $0 to $500, while the former have extended to $600.</li>
+        </ul>
+
+    </div>
+    
+</body>
+</html>
